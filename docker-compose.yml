@@ -1,0 +1,87 @@
+version: "3.8"
+
+services:
+  # localstack
+  localstack:
+    container_name: "order_localstack"
+    build: "./localstack"
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=sqs,sns
+      - AWS_ACCESS_KEY_ID=x
+      - AWS_SECRET_ACCESS_KEY=x
+      - AWS_DEFAULT_REGION=us-east-1
+    networks:
+      - order_sagas
+    # healthcheck:
+    #   test: "if [[ $LOCALSTACK_READY -ne 1 ]]; then exit 1; fi"
+    #   interval: 1m30s
+    #   timeout: 60s
+    #   retries: 3
+    #   start_period: 60s
+
+  # order service
+  order:
+    container_name: "order"
+    build: "./order"
+    ports:
+      - "8080:8080"
+    networks:
+      - order_sagas
+    environment:
+      - AWS_ACCESS_KEY_ID=x
+      - AWS_SECRET_ACCESS_KEY=x
+      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_ENDPOINT=http://localstack:4566
+      - AWS_REGION=us-east-1
+    depends_on:
+      - localstack
+
+  # restaurant service
+  restaurant:
+    container_name: "order_restaurant"
+    build: "./restaurant"
+    ports:
+      - "3000:3000"
+    networks:
+      - order_sagas
+    environment:
+      - AWS_ACCESS_KEY_ID=x
+      - AWS_SECRET_ACCESS_KEY=x
+      - AWS_DEFAULT_REGION=us-east-1
+    depends_on:
+      - localstack
+
+  # payment service
+  payment:
+    container_name: "order_payment"
+    build: "./payment"
+    ports:
+      - "3001:3000"
+    networks:
+      - order_sagas
+    environment:
+      - AWS_ACCESS_KEY_ID=x
+      - AWS_SECRET_ACCESS_KEY=x
+      - AWS_DEFAULT_REGION=us-east-1
+    depends_on:
+      - localstack
+
+  # notification service
+  notification:
+    container_name: "order_notification"
+    build: "./notification"
+    ports:
+      - "3002:3000"
+    networks:
+      - order_sagas
+    environment:
+      - AWS_ACCESS_KEY_ID=x
+      - AWS_SECRET_ACCESS_KEY=x
+      - AWS_DEFAULT_REGION=us-east-1
+    depends_on:
+      - localstack
+
+networks:
+  order_sagas:
