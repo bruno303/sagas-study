@@ -1,6 +1,7 @@
 package com.bso.order.infra.outbox
 
-import com.bso.order.application.MessagePublisher
+import com.bso.order.application.messaging.MessagePublisherStrategy
+import com.bso.order.application.messaging.Strategy
 import com.bso.order.application.outbox.OutboxTableItem
 import com.bso.order.application.outbox.OutboxTableItemRepository
 import com.bso.order.application.outbox.OutboxTableItemStatus
@@ -13,11 +14,11 @@ import java.util.concurrent.TimeUnit
 @Component
 class OutboxTableJob(
     private val outboxTableRepository: OutboxTableItemRepository,
-    private val messagePublisher: MessagePublisher
+    private val messagePublisherStrategy: MessagePublisherStrategy
 ) {
     private val logger: Logger by logger()
 
-    @Scheduled(fixedDelay = 10, timeUnit = TimeUnit.SECONDS)
+    @Scheduled(fixedDelay = 2, timeUnit = TimeUnit.SECONDS)
     fun execute() {
         logger.debug("Executing OutboxTableJob")
 
@@ -29,9 +30,10 @@ class OutboxTableJob(
         }
 
         pendingMessages.forEach { pendingMessage ->
-            messagePublisher.publish(
+            messagePublisherStrategy.publish(
                 message = pendingMessage.message,
-                queue = pendingMessage.queue
+                queue = pendingMessage.queue,
+                strategy = Strategy.DIRECT_SEND
             )
 
             pendingMessage.markAsSent().also { outboxTableRepository.save(it) }

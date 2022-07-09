@@ -1,6 +1,7 @@
 package com.bso.order.application.usecase.createorder.listener
 
-import com.bso.order.application.MessagePublisher
+import com.bso.order.application.messaging.MessagePublisherStrategy
+import com.bso.order.application.messaging.Strategy
 import com.bso.order.application.usecase.createorder.sagas.listener.dto.receive.CreateOrderResponseAsyncSagasDto
 import com.bso.order.application.usecase.createorder.sagas.listener.dto.send.CreateOrderAsyncSagasDto
 import com.bso.order.application.usecase.createorder.service.OrderService
@@ -20,7 +21,7 @@ class CreateOrderListener(
     override val sqsClient: SqsClient,
     private val orderService: OrderService,
     private val jsonUtils: JsonUtils,
-    private val messagePublisher: MessagePublisher,
+    private val messagePublisherStrategy: MessagePublisherStrategy,
     @Value("\${app.order.create.create-command.listener.pool-size:1}")
     private val poolSize: Int
 ) : AbstractSqsListener(sqsClient = sqsClient, queue = "order-create-order-command") {
@@ -31,9 +32,10 @@ class CreateOrderListener(
         with(message.toCreateOrderAsyncSagasDto()) {
             logger.info("Message received to create order")
             orderService.create(this.createOrderCommand).let {
-                messagePublisher.publish(
+                messagePublisherStrategy.publish(
                     message = CreateOrderResponseAsyncSagasDto(endToEndId = this.endToEndId, order = it, errors = null),
-                    queue = "order-create-order-response"
+                    queue = "order-create-order-response",
+                    strategy = Strategy.OUTBOX_TABLE
                 )
             }
         }

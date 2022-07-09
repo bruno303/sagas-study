@@ -1,7 +1,7 @@
 package com.bso.order.application.usecase.createorder.sagas
 
-import com.bso.order.application.MessagePublisher
-import com.bso.order.application.outbox.TransactionalOutboxTable
+import com.bso.order.application.messaging.MessagePublisherStrategy
+import com.bso.order.application.messaging.Strategy
 import com.bso.order.application.usecase.createorder.command.CreateOrderCommand
 import com.bso.order.application.usecase.createorder.sagas.listener.dto.receive.CreateOrderResponseAsyncSagasDto
 import com.bso.order.application.usecase.createorder.sagas.listener.dto.receive.CreateTicketResponseAsyncSagasDto
@@ -14,7 +14,6 @@ import com.bso.order.application.usecase.createorder.sagas.listener.dto.send.Pay
 import com.bso.order.application.usecase.createorder.service.OrderService
 import com.bso.order.commons.log.logger
 import com.bso.order.domain.entity.Order
-import com.bso.order.domain.entity.OrderStatus
 import org.slf4j.Logger
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -24,8 +23,7 @@ import java.util.UUID
 @Transactional
 class CreateOrderAsyncSagaManager(
     private val orderService: OrderService,
-//    private val messagePublisher: MessagePublisher,
-    private val outboxTable: TransactionalOutboxTable
+    private val messagePublisherStrategy: MessagePublisherStrategy
 ) {
     private val logger: Logger by logger()
 
@@ -119,18 +117,34 @@ class CreateOrderAsyncSagaManager(
     }
 
     private fun createOrder(data: CreateOrderAsyncSagasDto) {
-        outboxTable.publish(message = data, queue = "order-create-order-command")
+        messagePublisherStrategy.publish(
+            message = data,
+            queue = "order-create-order-command",
+            strategy = Strategy.OUTBOX_TABLE
+        )
     }
 
     private fun createTicket(data: CreateTicketAsyncSagasDto) {
-        outboxTable.publish(message = data, queue = "restaurant-create-ticket-command")
+        messagePublisherStrategy.publish(
+            message = data,
+            queue = "restaurant-create-ticket-command",
+            strategy = Strategy.OUTBOX_TABLE
+        )
     }
 
     private fun pay(data: PayAsyncSagasDto) {
-        outboxTable.publish(message = data, queue = "payment-pay-command")
+        messagePublisherStrategy.publish(
+            message = data,
+            queue = "payment-pay-command",
+            strategy = Strategy.OUTBOX_TABLE
+        )
     }
 
     private fun notify(data: NotifyAsyncSagasDto) {
-        outboxTable.publish(message = data, queue = "notification-notify-command")
+        messagePublisherStrategy.publish(
+            message = data,
+            queue = "notification-notify-command",
+            strategy = Strategy.OUTBOX_TABLE
+        )
     }
 }

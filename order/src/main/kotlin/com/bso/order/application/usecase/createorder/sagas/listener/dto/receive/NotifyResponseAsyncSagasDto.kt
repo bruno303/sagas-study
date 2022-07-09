@@ -9,6 +9,6 @@ data class NotifyResponseAsyncSagasDto(
     val order: Order,
     val ticketId: UUID,
     val paymentId: UUID,
-    val notificationId: UUID,
+    val notificationId: UUID?,
     val errors: List<String>?
 )
