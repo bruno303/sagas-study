@@ -8,6 +8,7 @@ data class Order(
     val name: String,
     val datetime: LocalDateTime = LocalDateTime.now(),
     val status: OrderStatus = OrderStatus.CREATED,
+    val error: String? = null
 )
 
 enum class OrderStatus {

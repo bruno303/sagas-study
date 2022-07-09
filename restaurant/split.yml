@@ -1,0 +1,12 @@
+# - feature_name:
+#     treatment: "treatment_applied_to_this_entry"
+#     keys: ["single_key_or_list", "other_key_same_treatment"]
+#     config: "{\"desc\" : \"this applies only to ON treatment\"}"
+#
+# Note that the "treatment" key is mandatory, but both "keys" and "config" are optional.
+
+- error_when_processing:
+    treatment: "on"
+    keys: ["1"]
+- error_when_processing:
+    treatment: "off"

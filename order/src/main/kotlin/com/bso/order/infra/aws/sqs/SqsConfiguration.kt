@@ -5,11 +5,9 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider
 import software.amazon.awssdk.regions.Region
-import software.amazon.awssdk.regions.providers.AwsProfileRegionProvider
 import software.amazon.awssdk.regions.providers.AwsRegionProvider
 import software.amazon.awssdk.regions.providers.AwsRegionProviderChain
-import software.amazon.awssdk.regions.providers.InstanceProfileRegionProvider
-import software.amazon.awssdk.regions.providers.SystemSettingsRegionProvider
+import software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain
 import software.amazon.awssdk.services.sqs.SqsClient
 import java.net.URI
 
@@ -27,9 +25,7 @@ class SqsConfiguration(
             .credentialsProvider(DefaultCredentialsProvider.create())
             .region(CustomAwsRegionProviderChain(
                 EnvironmentVariableRegionProvider(),
-                SystemSettingsRegionProvider(),
-                AwsProfileRegionProvider(),
-                InstanceProfileRegionProvider()
+                DefaultAwsRegionProviderChain()
             ).region)
             .build()
     }

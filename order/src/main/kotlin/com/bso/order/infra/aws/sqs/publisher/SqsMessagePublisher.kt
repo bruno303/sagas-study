@@ -13,9 +13,11 @@ class SqsMessagePublisher(
 ) : MessagePublisher {
 
     override fun <T : Any> publish(message: T, queue: String) {
+        val messageToSend: String = if (message is String) message else { jsonUtils.toJson(message) }
+
         val request = SendMessageRequest.builder()
             .queueUrl(queue)
-            .messageBody(jsonUtils.toJson(message))
+            .messageBody(messageToSend)
             .build()
 
         sqsClient.sendMessage(request)

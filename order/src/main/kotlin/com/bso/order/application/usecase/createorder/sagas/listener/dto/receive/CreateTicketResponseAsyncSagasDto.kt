@@ -6,7 +6,7 @@ import java.util.UUID
 data class CreateTicketResponseAsyncSagasDto(
     val endToEndId: UUID,
     val orderId: UUID,
-    val ticket: Ticket,
+    val ticket: Ticket?,
     val errors: List<String>?
 )
 

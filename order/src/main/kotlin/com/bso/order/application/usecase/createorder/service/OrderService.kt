@@ -43,14 +43,14 @@ class OrderService(
     fun notificationPending(order: Order): Order = changeStatus(order, OrderStatus.NOTIFICATION_PENDING)
 
 
-    private fun changeStatus(order: Order, status: OrderStatus): Order {
+    private fun changeStatus(order: Order, status: OrderStatus, error: String? = null): Order {
         logger.debug("[OrderId {}] Changing status from {} to {}", order.id, order.status, status)
-        return orderRepository.save(order.copy(status = status))
+        return orderRepository.save(order.copy(status = status, error = error))
     }
 
-    fun finishOrder(order: Order, hasErrors: Boolean): Order {
+    fun finishOrder(order: Order, hasErrors: Boolean, error: String? = null): Order {
         val status: OrderStatus = if (hasErrors) OrderStatus.FAILURE else OrderStatus.SUCCESS
-        return changeStatus(order = order, status = status)
+        return changeStatus(order = order, status = status, error = error)
     }
 
     fun findByIdOrThrow(id: UUID): Order {

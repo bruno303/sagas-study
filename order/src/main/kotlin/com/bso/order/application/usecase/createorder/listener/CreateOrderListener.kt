@@ -6,20 +6,26 @@ import com.bso.order.application.usecase.createorder.sagas.listener.dto.send.Cre
 import com.bso.order.application.usecase.createorder.service.OrderService
 import com.bso.order.commons.json.JsonUtils
 import com.bso.order.commons.log.logger
-import com.bso.order.infra.aws.sqs.listener.SqsListener
+import com.bso.order.infra.aws.sqs.listener.AbstractSqsListener
 import org.slf4j.Logger
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import software.amazon.awssdk.services.sqs.SqsClient
 import software.amazon.awssdk.services.sqs.model.Message
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 
 @Component
 class CreateOrderListener(
     override val sqsClient: SqsClient,
     private val orderService: OrderService,
     private val jsonUtils: JsonUtils,
-    private val messagePublisher: MessagePublisher
-) : SqsListener(sqsClient = sqsClient, queue = "order-create-order-command") {
+    private val messagePublisher: MessagePublisher,
+    @Value("\${app.order.create.create-command.listener.pool-size:1}")
+    private val poolSize: Int
+) : AbstractSqsListener(sqsClient = sqsClient, queue = "order-create-order-command") {
     private val logger: Logger by logger()
+    override val executor: Executor = Executors.newFixedThreadPool(poolSize)
 
     override fun processMessage(message: Message) {
         with(message.toCreateOrderAsyncSagasDto()) {

@@ -7,6 +7,6 @@ data class PayResponseAsyncSagasDto(
     val endToEndId: UUID,
     val orderId: UUID,
     val ticketId: UUID,
-    val payment: Payment,
+    val payment: Payment?,
     val errors: List<String>?
 )

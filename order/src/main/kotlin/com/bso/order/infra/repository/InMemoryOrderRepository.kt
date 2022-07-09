@@ -13,10 +13,10 @@ class InMemoryOrderRepository : OrderRepository {
         return orders.firstOrNull { it.id == id }
     }
 
-    override fun save(order: Order): Order {
-        findById(order.id)?.let {
-            orders.set(orders.indexOf(it), order)
-        } ?: orders.add(order)
-        return order
+    override fun save(entity: Order): Order {
+        findById(entity.id)?.let {
+            orders.set(orders.indexOf(it), entity)
+        } ?: orders.add(entity)
+        return entity
     }
 }

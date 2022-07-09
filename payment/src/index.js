@@ -7,7 +7,7 @@ import { router as paymentRouter } from './payment/routes/paymentRouter.js'
 import { consumer } from "./payment/payCommandListener.js";
 
 const app = express();
-const port = 3000
+const port = process.env['PORT'] || 3000
 
 app.use(logger('dev'));
 app.use(express.json());
