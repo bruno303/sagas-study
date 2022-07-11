@@ -3,6 +3,8 @@ package com.bso.order.application.usecase.createorder.sagas
 import com.bso.order.application.messaging.MessagePublisherStrategy
 import com.bso.order.application.messaging.Strategy
 import com.bso.order.application.usecase.createorder.command.CreateOrderCommand
+import com.bso.order.application.usecase.createorder.reversal.dto.CreateOrderReversalAsyncSagasDto
+import com.bso.order.application.usecase.createorder.reversal.dto.CreateTicketReversalAsyncSagasDto
 import com.bso.order.application.usecase.createorder.sagas.listener.dto.receive.CreateOrderResponseAsyncSagasDto
 import com.bso.order.application.usecase.createorder.sagas.listener.dto.receive.CreateTicketResponseAsyncSagasDto
 import com.bso.order.application.usecase.createorder.sagas.listener.dto.receive.NotifyResponseAsyncSagasDto
@@ -35,11 +37,16 @@ class CreateOrderAsyncSagaManager(
 
     fun processCreateOrderResponse(orderResponse: CreateOrderResponseAsyncSagasDto) {
         logger.info("[EndToEnd = {}] [OrderId = {}] processing response for order creation",
-            orderResponse.endToEndId, orderResponse.order.id)
-        val order: Order = orderService.findByIdOrThrow(orderResponse.order.id)
+            orderResponse.endToEndId, orderResponse.order?.id)
 
-        // TODO: handle error
-        orderService.ticketPending(order)
+        if (orderResponse.errors != null) {
+            logger.warn("[EndToEnd = {}] [OrderId = {}] order creation failed",
+                orderResponse.endToEndId, orderResponse.order?.id)
+            return
+        }
+
+        val orderFound: Order = orderService.findByIdOrThrow(orderResponse.order!!.id)
+        orderService.ticketPending(orderFound)
         logger.info("[EndToEnd = {}] [OrderId = {}] requesting ticket creation",
             orderResponse.endToEndId, orderResponse.order.id)
         createTicket(
@@ -58,6 +65,7 @@ class CreateOrderAsyncSagaManager(
         if (ticketResponse.errors != null) {
             logger.warn("[EndToEnd = {}] [OrderId = {}] ticket creation failed",
                 ticketResponse.endToEndId, ticketResponse.orderId)
+            undoOrderCreation(ticketResponse.endToEndId, ticketResponse.orderId)
             orderService.finishOrder(order, true, ticketResponse.errors.joinToString())
             return
         }
@@ -82,6 +90,8 @@ class CreateOrderAsyncSagaManager(
         if (paymentResponse.errors != null) {
             logger.warn("[EndToEnd = {}] [OrderId = {}] payment failed",
                 paymentResponse.endToEndId, paymentResponse.orderId)
+            undoTicketCreation(paymentResponse.endToEndId, paymentResponse.orderId, paymentResponse.ticketId)
+            undoOrderCreation(paymentResponse.endToEndId, paymentResponse.orderId)
             orderService.finishOrder(order, true, paymentResponse.errors.joinToString())
             return
         }
@@ -100,7 +110,7 @@ class CreateOrderAsyncSagaManager(
     }
 
     fun processNotificationResponse(notificationResponse: NotifyResponseAsyncSagasDto) {
-        logger.info("[EndToEnd = {}] [OrderId = {}] requesting notification",
+        logger.info("[EndToEnd = {}] [OrderId = {}] processing notification response",
             notificationResponse.endToEndId, notificationResponse.order.id)
         val order: Order = orderService.findByIdOrThrow(notificationResponse.order.id)
 
@@ -144,6 +154,29 @@ class CreateOrderAsyncSagaManager(
         messagePublisherStrategy.publish(
             message = data,
             queue = "notification-notify-command",
+            strategy = Strategy.OUTBOX_TABLE
+        )
+    }
+
+    private fun undoOrderCreation(endToEndId: UUID, orderId: UUID) {
+        messagePublisherStrategy.publish(
+            message = CreateOrderReversalAsyncSagasDto(
+                endToEndId = endToEndId,
+                orderId = orderId
+            ),
+            queue = "order-create-order-reversal",
+            strategy = Strategy.OUTBOX_TABLE
+        )
+    }
+
+    private fun undoTicketCreation(endToEndId: UUID, orderId: UUID, ticketId: UUID) {
+        messagePublisherStrategy.publish(
+            message = CreateTicketReversalAsyncSagasDto(
+                endToEndId = endToEndId,
+                orderId = orderId,
+                ticketId = ticketId
+            ),
+            queue = "restaurant-create-ticket-reversal",
             strategy = Strategy.OUTBOX_TABLE
         )
     }

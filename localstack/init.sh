@@ -1,9 +1,11 @@
 echo "########### Creating SQS ###########"
 awslocal sqs create-queue --queue-name order-create-order-command &
 awslocal sqs create-queue --queue-name order-create-order-response &
+awslocal sqs create-queue --queue-name order-create-order-reversal &
 
 awslocal sqs create-queue --queue-name restaurant-create-ticket-command &
 awslocal sqs create-queue --queue-name order-create-ticket-response &
+awslocal sqs create-queue --queue-name restaurant-create-ticket-reversal &
 
 awslocal sqs create-queue --queue-name payment-pay-command &
 awslocal sqs create-queue --queue-name order-pay-response &

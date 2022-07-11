@@ -18,7 +18,7 @@ class OutboxTableJob(
 ) {
     private val logger: Logger by logger()
 
-    @Scheduled(fixedDelay = 2, timeUnit = TimeUnit.SECONDS)
+    @Scheduled(fixedDelayString = "\${application.job.outbox-table.delay:2}", timeUnit = TimeUnit.SECONDS)
     fun execute() {
         logger.debug("Executing OutboxTableJob")
 

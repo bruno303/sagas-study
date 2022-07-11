@@ -13,14 +13,9 @@ If the payment has errors, the previous steps will be undone.
 
 ## Scope
 
-### Sync
-- [x] Create order (same service that manage the saga)
-- [x] Create ticket (call restaurant service)
-- [x] Pay (call payment service)
-- [x] Notify (call notification service)
-- [ ] Finish order 
-
 ### Async
+- [x] Transactional Outbox table pattern
+- [x] Message publisher strategy
 - [x] Create order (same service that manage the saga)
 - [x] Create ticket (send message to restaurant service)
 - [x] Listen ticket response
@@ -29,3 +24,7 @@ If the payment has errors, the previous steps will be undone.
 - [x] Notify (send message to notification service)
 - [x] Listen notification response
 - [x] Finish order
+- [ ] Handle failure in all necessary steps
+- [ ] Sent internal events for each order's status update
+- [ ] Configure DLQ for notification command queue
+- [ ] Docs

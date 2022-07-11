@@ -30,8 +30,8 @@ class CreateOrderListener(
 
     override fun processMessage(message: Message) {
         with(message.toCreateOrderAsyncSagasDto()) {
-            logger.info("Message received to create order")
-            orderService.create(this.createOrderCommand).let {
+            logger.info("[EndToEndId = {}] Message received to create order", endToEndId)
+            orderService.create(this.createOrderCommand).also {
                 messagePublisherStrategy.publish(
                     message = CreateOrderResponseAsyncSagasDto(endToEndId = this.endToEndId, order = it, errors = null),
                     queue = "order-create-order-response",

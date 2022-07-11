@@ -5,6 +5,6 @@ import java.util.UUID
 
 data class CreateOrderResponseAsyncSagasDto(
     val endToEndId: UUID,
-    val order: Order,
+    val order: Order?,
     val errors: List<String>?
 )

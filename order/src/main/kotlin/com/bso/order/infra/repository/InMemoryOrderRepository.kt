@@ -19,4 +19,6 @@ class InMemoryOrderRepository : OrderRepository {
         } ?: orders.add(entity)
         return entity
     }
+
+    override fun findAll(): List<Order> = orders.toList()
 }

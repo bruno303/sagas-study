@@ -21,6 +21,8 @@ class InMemoryOutboxTableItemRepository : OutboxTableItemRepository {
         return entity
     }
 
+    override fun findAll(): List<OutboxTableItem> = items.toList()
+
     override fun findByStatus(status: OutboxTableItemStatus): List<OutboxTableItem> {
         return items.filter { it.status == status }
     }
