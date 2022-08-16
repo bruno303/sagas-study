@@ -9,6 +9,7 @@ import com.bso.order.web.request.OrderRequest
 import org.slf4j.Logger
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -25,10 +26,11 @@ class OrderController(
 ) {
     private val logger: Logger by logger()
 
+    @GetMapping("{id}")
+    fun get(@PathVariable("id") id: UUID): Order? = orderService.findById(id)
+
     @GetMapping
-    fun get(@RequestParam("id") id: UUID): Order? {
-        return orderService.findById(id)
-    }
+    fun getAll(): List<Order> = orderService.findAll()
 
     @PostMapping
     @ResponseStatus(HttpStatus.OK)

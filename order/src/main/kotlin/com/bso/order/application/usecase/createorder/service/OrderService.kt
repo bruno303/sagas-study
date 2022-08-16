@@ -37,6 +37,7 @@ class OrderService(
     }
 
     fun findById(id: UUID): Order? = orderRepository.findById(id)
+    fun findAll(): List<Order> =  orderRepository.findAll()
 
     fun ticketPending(order: Order): Order = changeStatus(order, OrderStatus.TICKET_PENDING)
     fun paymentPending(order: Order): Order = changeStatus(order, OrderStatus.PAYMENT_PENDING)
